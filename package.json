@@ -4,15 +4,17 @@
   "main": "jwt-generator.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon jwt-generator.js"
+    "start": "node jwt-generator.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "cors": "^2.8.5",
+    "docker": "^1.0.0",
     "express": "^4.21.2",
+    "helmet": "^8.0.0",
     "jsonwebtoken": "^9.0.2"
   }
 }
- 
