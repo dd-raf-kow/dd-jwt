@@ -7,24 +7,41 @@ const app = express();
 const port = process.env.PORT || 3000;
 const sharedSecret = process.env.SHARED_SECRET;
 
+// Middleware do logowania zapytań
 app.use((req, res, next) => {
   console.log(`Request received: ${req.method} ${req.originalUrl}`);
-  next(); 
+  next();
 });
 
+// Konfiguracja CORS
+const allowedOrigins = [
+  'http://swko8wgwcwgkk8ksg0kow8gk.138.199.158.65.sslip.io', // Twoja domena aplikacji frontendowej
+  'http://another-allowed-origin.com' // Jeśli chcesz dodać więcej domen
+];
+
 app.use(cors({
-  origin: '*'
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST'], // Dozwolone metody
+  allowedHeaders: ['Content-Type', 'Authorization'], // Dozwolone nagłówki
 }));
 
+// Bezpieczeństwo nagłówków za pomocą Helmet
 app.use(
-    helmet.contentSecurityPolicy({
-      directives: {
-        defaultSrc: ["'self'"], 
-        connectSrc: ["'self'", "*"],
-      },
-    })
+  helmet.contentSecurityPolicy({
+    directives: {
+      defaultSrc: ["'self'"],
+      connectSrc: ["'self'", 'http://swko8wgwcwgkk8ksg0kow8gk.138.199.158.65.sslip.io'], // Zezwalaj na połączenia z aplikacji frontendowej
+    },
+  })
 );
 
+// Funkcja do generowania JWT
 const generateJWT = (email) => {
   const payload = {
     email: email,
@@ -38,6 +55,7 @@ const generateJWT = (email) => {
   return jwt.sign(payload, sharedSecret, options);
 };
 
+// Endpoint do generowania JWT
 app.get('/get-jwt', (req, res) => {
   const { email } = req.query;
 
@@ -52,11 +70,13 @@ app.get('/get-jwt', (req, res) => {
   res.json({ token });
 });
 
+// Globalny middleware do obsługi błędów
 app.use((err, req, res, next) => {
   console.error(`Error occurred: ${err.message}`);
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
+// Uruchomienie serwera
 app.listen(port, () => {
-  console.log(`JWT Generator running at ${port}`);
+  console.log(`JWT Generator running at http://localhost:${port}`);
 });
